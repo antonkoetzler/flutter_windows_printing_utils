@@ -3,6 +3,8 @@
 #include <optional>
 
 #include "flutter/generated_plugin_registrant.h"
+#include <flutter/method_channel.h>
+#include <flutter/standard_method_codec.h>
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
@@ -10,21 +12,33 @@ FlutterWindow::FlutterWindow(const flutter::DartProject& project)
 FlutterWindow::~FlutterWindow() {}
 
 bool FlutterWindow::OnCreate() {
-  if (!Win32Window::OnCreate()) {
-    return false;
-  }
+    if (!Win32Window::OnCreate()) {
+        return false;
+    }
 
-  RECT frame = GetClientArea();
+    RECT frame = GetClientArea();
 
-  // The size here must match the window dimensions to avoid unnecessary surface
-  // creation / destruction in the startup path.
-  flutter_controller_ = std::make_unique<flutter::FlutterViewController>(
-      frame.right - frame.left, frame.bottom - frame.top, project_);
-  // Ensure that basic setup of the controller was successful.
-  if (!flutter_controller_->engine() || !flutter_controller_->view()) {
-    return false;
-  }
-  RegisterPlugins(flutter_controller_->engine());
+    // The size here must match the window dimensions to avoid unnecessary surface
+    // creation / destruction in the startup path.
+    flutter_controller_ = std::make_unique<flutter::FlutterViewController>(
+        frame.right - frame.left, frame.bottom - frame.top, project_);
+    // Ensure that basic setup of the controller was successful.
+    if (!flutter_controller_->engine() || !flutter_controller_->view()) {
+        return false;
+    }
+    RegisterPlugins(flutter_controller_->engine());
+
+    // Method channel of `flutter_windows_printing_utils`.
+    flutter::MethodChannel<> channel(
+        flutter_controller_->engine()->messenger(), "antonkoetzler/flutter_windows_printing_utils",
+        &flutter::StandardMethodCodec::GetInstance());
+    channel.SetMethodCallHandler(
+        [](const flutter::MethodCall<>& call,
+            std::unique_ptr<flutter::MethodResult<>> result) {
+                // TODO
+        });
+
+
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
   flutter_controller_->engine()->SetNextFrameCallback([&]() {
