@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_windows_printing_utils/flutter_windows_printing_utils.dart';
 
 void main() {
   runApp(const MainApp());
@@ -9,10 +10,13 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       home: Scaffold(
         body: Center(
-          child: Text('Hello World!'),
+          child: ElevatedButton(
+	    onPressed: () => FlutterWindowsPrintingUtils.openPrintDialog(),
+	    child: const Text('Click for platform channels'),
+	  ),
         ),
       ),
     );
