@@ -1,15 +1,14 @@
-name: flutter_windows_printing
+name: flutter_printing
 description: "A new Flutter project."
 publish_to: 'none'
 version: 0.1.0
 
 environment:
-  sdk: ^3.6.0
+  sdk: ^3.6.1
 
 dependencies:
   flutter:
     sdk: flutter
-  path: 1.9.0
 
 dev_dependencies:
   flutter_test:

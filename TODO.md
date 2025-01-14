@@ -1,1 +1,1 @@
-Guide: https://chatgpt.com/c/67856876-ce8c-800d-816a-a530421d3e99
+1. Add headers to the two functions in flutter_window.cpp
