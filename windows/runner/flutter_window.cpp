@@ -1,10 +1,12 @@
 #include "flutter_window.h"
 
 #include <optional>
+#include <fstream>
 
 #include "flutter/generated_plugin_registrant.h"
 #include <flutter/method_channel.h>
 #include <flutter/standard_method_codec.h>
+#include "../../build/windows/x64/runner/open_print_dialog.cpp"
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
 	: project_(project) {
@@ -37,7 +39,56 @@ bool FlutterWindow::OnCreate() {
 		[](const flutter::MethodCall<>& call,
 			std::unique_ptr<flutter::MethodResult<>> result) {
 				if (call.method_name() == "openPrintDialog") {
-					result->Success("Hello, World!");
+					// Provided method channel arguments.
+					const auto* arguments = std::get_if<flutter::EncodableMap>(call.arguments());
+
+					// `file_path` not provided in the arguments.
+					if (!arguments) {
+						result->Error("BadArguments", "Expected map with valid file path.");
+						return;
+					}
+
+					// Check if the file path or bytes are provided
+					auto file_path_iterator = arguments->find(flutter::EncodableValue("file_path"));
+					auto file_bytes_iterator = arguments->find(flutter::EncodableValue("file_bytes"));
+
+					std::string file_path;
+
+					if (file_path_iterator != arguments->end()) {
+						// If file path is provided, use it
+						file_path = std::get<std::string>(file_path_iterator->second);
+					}
+					else if (file_bytes_iterator != arguments->end()) {
+						// If file bytes are provided, write them to a temporary file
+						const auto& file_bytes = std::get<std::vector<int>>(file_bytes_iterator->second);
+
+						// Create a temporary file path
+						const std::string temp_file_path = "temp_print_file.pdf";
+						std::ofstream output_file(temp_file_path, std::ios::binary);
+						if (!output_file) {
+							result->Error("FileError", "Failed to write temporary file.");
+							return;
+						}
+
+						output_file.write(reinterpret_cast<const char*>(file_bytes.data()), file_bytes.size());
+						file_path = temp_file_path;
+					}
+					else {
+						result->Error("BadArguments", "Expected either file path or file bytes.");
+						return;
+					}
+
+					// Call the print dialog function with the file path
+					auto error = OpenPrintDialog(file_path);
+					if (error.has_value()) {
+						std::cout << "here" << error.value() << std::endl;
+						std::remove(file_path.c_str());
+						result->Error(error.value());
+						return;
+					}
+
+					std::remove(file_path.c_str());
+					result->Success("");
 				}
 				else {
 					result->NotImplemented();

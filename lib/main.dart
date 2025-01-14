@@ -14,9 +14,11 @@ class MainApp extends StatelessWidget {
       home: Scaffold(
         body: Center(
           child: ElevatedButton(
-	    onPressed: () => FlutterWindowsPrintingUtils.openPrintDialog(),
-	    child: const Text('Click for platform channels'),
-	  ),
+            onPressed: () => FlutterWindowsPrintingUtils.openPrintDialog(
+              filePath: './troll.pdf',
+            ),
+            child: const Text('Click for platform channels'),
+          ),
         ),
       ),
     );
