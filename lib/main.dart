@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_windows_printing_utils/flutter_windows_printing_utils.dart';
+import 'package:flutter_windows_printing/flutter_windows_printing.dart';
 
 void main() {
   runApp(const MainApp());
@@ -14,8 +14,8 @@ class MainApp extends StatelessWidget {
       home: Scaffold(
         body: Center(
           child: ElevatedButton(
-            onPressed: () => FlutterWindowsPrintingUtils.openPrintDialog(
-              filePath: './troll.pdf',
+            onPressed: () => FlutterWindowsPrinting.openPrintDialog(
+              filePath: './lib/troll.pdf',
             ),
             child: const Text('Click for platform channels'),
           ),
