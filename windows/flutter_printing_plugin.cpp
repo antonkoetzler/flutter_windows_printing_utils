@@ -14,6 +14,8 @@
 #include <sstream>
 #include <fstream>
 
+HWND hwnd = nullptr;
+
 namespace flutter_printing
 {
 
@@ -27,6 +29,11 @@ namespace flutter_printing
             &flutter::StandardMethodCodec::GetInstance());
 
     auto plugin = std::make_unique<FlutterPrintingPlugin>();
+
+    if (auto view = registrar->GetView())
+    {
+      hwnd = view->GetNativeWindow();
+    }
 
     channel->SetMethodCallHandler(
         [plugin_pointer = plugin.get()](const auto &call, auto result)
@@ -150,33 +157,33 @@ namespace flutter_printing
   // Function that launches the Windows print dialog for a given file.
   std::optional<std::string> OpenPrintDialog(const std::string &file_path)
   {
-    std::wstring wide_file_path(file_path.begin(), file_path.end());
+    PRINTDLG printDlg = {0};
+    printDlg.lStructSize = sizeof(PRINTDLG);
+    printDlg.Flags = PD_RETURNDC; // Request a device context
+    printDlg.hwndOwner = nullptr; // No owner window
 
-    PRINTDLGEX pdex = {0};
-    pdex.lStructSize = sizeof(PRINTDLGEX);
-    pdex.hwndOwner = nullptr;
-    pdex.hDevMode = nullptr;
-    pdex.hDevNames = nullptr;
-    pdex.Flags = PD_RETURNDC | PD_USEDEVMODECOPIESANDCOLLATE;
-    pdex.nCopies = 1;
-    pdex.nMinPage = 0;
-    pdex.nMaxPage = 0;
-    pdex.nStartPage = START_PAGE_GENERAL;
-    pdex.nPageRanges = 0;
-    pdex.nMaxPageRanges = 0;
-    pdex.lpPageRanges = nullptr;
-    pdex.dwResultAction = 0;
-
-    HRESULT hr = PrintDlgEx(&pdex);
-    if (hr != S_OK)
+    if (PrintDlg(&printDlg))
     {
-      DWORD extError = CommDlgExtendedError();
-      std::cout << "PrintDlgEx HRESULT: 0x" << std::hex << hr << std::endl;
-      std::cout << "CommDlgExtendedError: 0x" << std::hex << extError << std::endl;
-      std::cout << "GetLastError: " << GetErrorMessage(GetLastError()) << std::endl;
-      return "Print dialog failed";
+      // Successfully opened the print dialog
+      // Clean up the allocated resources
+      if (printDlg.hDevMode)
+        GlobalFree(printDlg.hDevMode);
+      if (printDlg.hDevNames)
+        GlobalFree(printDlg.hDevNames);
+      if (printDlg.hDC)
+        DeleteDC(printDlg.hDC);
+
+      return std::nullopt; // No error
     }
 
-    return std::nullopt;
+    DWORD errorCode = CommDlgExtendedError();
+    if (errorCode != 0)
+    {
+      return "PrintDlg failed with error code: " + std::to_string(errorCode);
+    }
+    else
+    {
+      return "Print dialog was canceled by the user.";
+    }
   }
 } // namespace flutter_printing
