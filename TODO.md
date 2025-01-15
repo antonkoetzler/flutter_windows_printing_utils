@@ -1,1 +1,9 @@
-1. Add headers to the two functions in flutter_window.cpp
+# TODO
+
+1. (**IN PROGRESS**) Implement openPrintDialog:
+
+- (**IN PROGRESS**) Windows;
+- MacOS;
+- Linux;
+- Android;
+- iOS.
