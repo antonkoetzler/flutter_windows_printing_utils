@@ -8,6 +8,8 @@
 
 namespace flutter_printing
 {
+    std::string GetErrorMessage(DWORD error_code);
+    std::optional<std::string> OpenPrintDialog(const std::string &file_path);
 
     class FlutterPrintingPlugin : public flutter::Plugin
     {

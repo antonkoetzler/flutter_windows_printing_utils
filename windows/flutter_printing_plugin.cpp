@@ -129,55 +129,54 @@ namespace flutter_printing
     }
   }
 
-} // namespace flutter_printing
-
-// Function to retrieve a formatted error message from a DWORD error code.
-std::string GetErrorMessage(DWORD error_code)
-{
-  char *message_buffer = nullptr;
-  size_t size = FormatMessageA(
-      FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-      nullptr,
-      error_code,
-      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-      reinterpret_cast<LPSTR>(&message_buffer),
-      0,
-      nullptr);
-
-  std::string message(message_buffer, size);
-  LocalFree(message_buffer);
-  return message;
-}
-
-// Function that launches the Windows print dialog for a given file.
-std::optional<std::string> OpenPrintDialog(const std::string &file_path)
-{
-  std::wstring wide_file_path(file_path.begin(), file_path.end());
-
-  PRINTDLGEX pdex = {0};
-  pdex.lStructSize = sizeof(PRINTDLGEX);
-  pdex.hwndOwner = nullptr;
-  pdex.hDevMode = nullptr;
-  pdex.hDevNames = nullptr;
-  pdex.Flags = PD_RETURNDC | PD_USEDEVMODECOPIESANDCOLLATE;
-  pdex.nCopies = 1;
-  pdex.nMinPage = 0;
-  pdex.nMaxPage = 0;
-  pdex.nStartPage = START_PAGE_GENERAL;
-  pdex.nPageRanges = 0;
-  pdex.nMaxPageRanges = 0;
-  pdex.lpPageRanges = nullptr;
-  pdex.dwResultAction = 0;
-
-  HRESULT hr = PrintDlgEx(&pdex);
-  if (hr != S_OK)
+  // Function to retrieve a formatted error message from a DWORD error code.
+  std::string GetErrorMessage(DWORD error_code)
   {
-    DWORD extError = CommDlgExtendedError();
-    std::cout << "PrintDlgEx HRESULT: 0x" << std::hex << hr << std::endl;
-    std::cout << "CommDlgExtendedError: 0x" << std::hex << extError << std::endl;
-    std::cout << "GetLastError: " << GetErrorMessage(GetLastError()) << std::endl;
-    return "Print dialog failed";
+    char *message_buffer = nullptr;
+    size_t size = FormatMessageA(
+        FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        nullptr,
+        error_code,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+        reinterpret_cast<LPSTR>(&message_buffer),
+        0,
+        nullptr);
+
+    std::string message(message_buffer, size);
+    LocalFree(message_buffer);
+    return message;
   }
 
-  return std::nullopt;
-}
+  // Function that launches the Windows print dialog for a given file.
+  std::optional<std::string> OpenPrintDialog(const std::string &file_path)
+  {
+    std::wstring wide_file_path(file_path.begin(), file_path.end());
+
+    PRINTDLGEX pdex = {0};
+    pdex.lStructSize = sizeof(PRINTDLGEX);
+    pdex.hwndOwner = nullptr;
+    pdex.hDevMode = nullptr;
+    pdex.hDevNames = nullptr;
+    pdex.Flags = PD_RETURNDC | PD_USEDEVMODECOPIESANDCOLLATE;
+    pdex.nCopies = 1;
+    pdex.nMinPage = 0;
+    pdex.nMaxPage = 0;
+    pdex.nStartPage = START_PAGE_GENERAL;
+    pdex.nPageRanges = 0;
+    pdex.nMaxPageRanges = 0;
+    pdex.lpPageRanges = nullptr;
+    pdex.dwResultAction = 0;
+
+    HRESULT hr = PrintDlgEx(&pdex);
+    if (hr != S_OK)
+    {
+      DWORD extError = CommDlgExtendedError();
+      std::cout << "PrintDlgEx HRESULT: 0x" << std::hex << hr << std::endl;
+      std::cout << "CommDlgExtendedError: 0x" << std::hex << extError << std::endl;
+      std::cout << "GetLastError: " << GetErrorMessage(GetLastError()) << std::endl;
+      return "Print dialog failed";
+    }
+
+    return std::nullopt;
+  }
+} // namespace flutter_printing

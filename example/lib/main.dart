@@ -27,12 +27,12 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
+    await _flutterPrintingPlugin.openPrintDialog(filePath: './lib/troll.pdf');
+
     String platformVersion;
     // Platform messages may fail, so we use a try/catch PlatformException.
     // We also handle the message potentially returning null.
     try {
-      await _flutterPrintingPlugin.openPrintDialog(filePath: './lib/troll.pdf');
-
       platformVersion = await _flutterPrintingPlugin.getPlatformVersion() ?? 'Unknown platform version';
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
